@@ -21,7 +21,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+    html,body{height:100%;background:#f6f8fb}
     ::-webkit-scrollbar{width:0;height:0}
     input,textarea{font:inherit;color:inherit;border:none;outline:none;background:none}
     textarea{resize:none}
@@ -29,19 +30,10 @@
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
   </style>
 </helmet>
-<div ref="{{ rootRef }}" style="--bg:#f6f8fb;--card:#ffffff;--cb:#e7ecf3;--ink:#16202e;--muted:#7e8a9a;--subtle:#eef2f7;--accent:#2f6bd8;--fui:'Hanken Grotesk',system-ui,sans-serif;--fnum:'JetBrains Mono',monospace;--fdisp:'Hanken Grotesk',sans-serif;--rad:18px;position:relative;width:390px;height:844px;background:var(--bg);color:var(--ink);font-family:var(--fui);border-radius:46px;overflow:hidden;border:1px solid #dde4ee;box-shadow:0 30px 70px -20px rgba(22,32,46,.35);display:flex;flex-direction:column">
-
-  <!-- status bar -->
-  <div style="height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 30px 0 32px;font-size:15px;font-weight:600;letter-spacing:.3px">
-    <span style="font-variant-numeric:tabular-nums">9:41</span>
-    <div style="display:flex;align-items:center;gap:6px">
-      <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="1"/><rect x="4.5" y="4" width="3" height="7" rx="1"/><rect x="9" y="2" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
-      <svg width="22" height="11" viewBox="0 0 24 12" fill="none" stroke="currentColor"><rect x="1" y="1" width="19" height="10" rx="3"/><rect x="2.5" y="2.5" width="13" height="7" rx="1.5" fill="currentColor" stroke="none"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor" stroke="none"/></svg>
-    </div>
-  </div>
+<div ref="{{ rootRef }}" style="--bg:#f6f8fb;--card:#ffffff;--cb:#e7ecf3;--ink:#16202e;--muted:#7e8a9a;--subtle:#eef2f7;--accent:#2f6bd8;--fui:'Hanken Grotesk',system-ui,sans-serif;--fnum:'JetBrains Mono',monospace;--fdisp:'Hanken Grotesk',sans-serif;--rad:18px;position:relative;width:100%;height:100vh;max-width:480px;margin:0 auto;background:var(--bg);color:var(--ink);font-family:var(--fui);overflow:hidden;display:flex;flex-direction:column">
 
   <!-- app bar -->
-  <div style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 22px 14px">
+  <div style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:env(safe-area-inset-top,12px) 22px 14px">
     <div>
       <div style="font-size:12px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)">{{ topKicker }}</div>
       <div style="font-size:23px;font-weight:600;letter-spacing:-.4px;margin-top:2px">{{ topTitle }}</div>
@@ -567,10 +559,10 @@
             <sc-for list="{{ cajaRows }}" as="r" hint-placeholder-count="12">
               <div style="display:flex;align-items:center;border-top:1px solid var(--cb)">
                 <div style="width:44px;flex:none;padding:7px 6px;font-size:11px;font-weight:600">{{ r.abbr }}</div>
-                <div style="flex:1;padding:4px 4px"><input value="{{ r.ppto.value }}" onInput="{{ r.ppto.onInput }}" onFocus="{{ r.ppto.onFocus }}" onBlur="{{ r.ppto.onBlur }}" inputmode="numeric" style="width:100%;text-align:right;font-family:var(--fnum);font-size:10px;font-weight:600;background:var(--subtle);border-radius:6px;padding:6px 5px"/></div>
-                <div style="flex:1;padding:4px 4px"><input value="{{ r.final.value }}" onInput="{{ r.final.onInput }}" onFocus="{{ r.final.onFocus }}" onBlur="{{ r.final.onBlur }}" inputmode="numeric" style="width:100%;text-align:right;font-family:var(--fnum);font-size:10px;font-weight:600;background:var(--subtle);border-radius:6px;padding:6px 5px"/></div>
-                <div style="width:46px;flex:none;padding:4px 3px"><input value="{{ r.pct.value }}" onInput="{{ r.pct.onInput }}" onFocus="{{ r.pct.onFocus }}" onBlur="{{ r.pct.onBlur }}" inputmode="numeric" style="width:100%;text-align:right;font-family:var(--fnum);font-size:10px;font-weight:600;background:var(--subtle);border-radius:6px;padding:6px 3px"/></div>
-                <div style="flex:1;padding:4px 4px"><input value="{{ r.ing.value }}" onInput="{{ r.ing.onInput }}" onFocus="{{ r.ing.onFocus }}" onBlur="{{ r.ing.onBlur }}" inputmode="numeric" style="width:100%;text-align:right;font-family:var(--fnum);font-size:10px;font-weight:600;background:var(--subtle);border-radius:6px;padding:6px 5px"/></div>
+                <div style="flex:1;padding:4px 4px"><input value="{{ r.pptoV }}" onInput="{{ r.pptoI }}" onFocus="{{ r.pptoF }}" onBlur="{{ r.pptoB }}" inputmode="numeric" style="width:100%;text-align:right;font-family:var(--fnum);font-size:10px;font-weight:600;background:var(--subtle);border-radius:6px;padding:6px 5px"/></div>
+                <div style="flex:1;padding:4px 4px"><input value="{{ r.finalV }}" onInput="{{ r.finalI }}" onFocus="{{ r.finalF }}" onBlur="{{ r.finalB }}" inputmode="numeric" style="width:100%;text-align:right;font-family:var(--fnum);font-size:10px;font-weight:600;background:var(--subtle);border-radius:6px;padding:6px 5px"/></div>
+                <div style="width:46px;flex:none;padding:4px 3px"><input value="{{ r.pctV }}" onInput="{{ r.pctI }}" onFocus="{{ r.pctF }}" onBlur="{{ r.pctB }}" inputmode="numeric" style="width:100%;text-align:right;font-family:var(--fnum);font-size:10px;font-weight:600;background:var(--subtle);border-radius:6px;padding:6px 3px"/></div>
+                <div style="flex:1;padding:4px 4px"><input value="{{ r.ingV }}" onInput="{{ r.ingI }}" onFocus="{{ r.ingF }}" onBlur="{{ r.ingB }}" inputmode="numeric" style="width:100%;text-align:right;font-family:var(--fnum);font-size:10px;font-weight:600;background:var(--subtle);border-radius:6px;padding:6px 5px"/></div>
               </div>
             </sc-for>
             <div style="display:flex;align-items:center;border-top:2px solid var(--cb);background:var(--subtle);font-family:var(--fnum);font-size:10px;font-weight:700">
@@ -659,6 +651,13 @@
         <div style="width:46px;height:28px;border-radius:99px;flex:none;background:{{ prorateBg }};position:relative;transition:background .2s">
           <div style="position:absolute;top:3px;left:{{ prorateX }};width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
         </div>
+      </div>
+
+      <div style="margin-top:28px;border-top:1px solid var(--cb);padding-top:20px">
+        <button onClick="{{ resetAll }}" style="width:100%;padding:13px 0;border-radius:13px;border:1.5px solid #b8472e;background:rgba(184,71,46,.06);color:#b8472e;font-size:14px;font-weight:600;cursor:pointer">
+          🗑 Restablecer todos los datos
+        </button>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">Borra gastos, medios de pago, tabla anual y caja. Pide confirmación.</div>
       </div>
     </div>
   </sc-if>
@@ -947,6 +946,15 @@ class Component extends DCLogic {
     const {expenses,budgets,methods,fixedPayments,itemMatrix,caja,monthComments,importedTotals,currency,period,tab,fixedTab,prorate}=this.state;
     try{localStorage.setItem(this._lsKey,JSON.stringify({expenses,budgets,methods,fixedPayments,itemMatrix,caja,monthComments,importedTotals,currency,period,tab,fixedTab,prorate}));}catch(e){}
   }
+  resetAll(){
+    if(!window.confirm('¿Borrar TODOS los datos y volver a cero? Esta acción no se puede deshacer.')) return;
+    try{localStorage.removeItem(this._lsKey);}catch(e){}
+    const z12=()=>[0,0,0,0,0,0,0,0,0,0,0,0];
+    const budgets={}; [...this.fixed,...this.variable].forEach(c=>{budgets[c.id]=c.budget;});
+    const fixedPayments={}; this.fixed.forEach(f=>{fixedPayments[f.id]={done:false,date:'',pm:''};});
+    const methods=this.pm.map(m=>({...m,inicial:0,saldoReal:0}));
+    this.setState({expenses:[],budgets,methods,fixedPayments,itemMatrix:{luz:z12(),mecanico:z12(),rego:z12(),viajes:z12(),otros:z12()},caja:{ppto:z12(),final:z12(),pct:z12(),ingreso:z12()},monthComments:{},importedTotals:{},currency:'AUD',period:'mensual',tab:'inicio',fixedTab:'registro',importMsg:''});
+  }
   toggleFixedDone(id){ this.setState(s=>{const fp={...s.fixedPayments,[id]:{...s.fixedPayments[id],done:!s.fixedPayments[id].done}};return {fixedPayments:fp};}); }
   setFixedPayment(id,field,val){ this.setState(s=>{const fp={...s.fixedPayments,[id]:{...s.fixedPayments[id],[field]:val}};return {fixedPayments:fp};}); }
   triggerImport(mi){ this._impMonth=mi; if(this.fileRef.current) this.fileRef.current.click(); }
@@ -1186,11 +1194,15 @@ class Component extends DCLogic {
     // ---- balance de caja mensual ----
     const cj=S.caja;
     const cajaRows=[]; for(let mi=0;mi<12;mi++){
+      const ep=mkEdit('cj_p_'+mi,String(cj.ppto[mi]||0),(t)=>this.setCaja('ppto',mi,t));
+      const ef=mkEdit('cj_f_'+mi,String(cj.final[mi]||0),(t)=>this.setCaja('final',mi,t));
+      const ec=mkEdit('cj_pc_'+mi,String(cj.pct[mi]||0),(t)=>this.setCaja('pct',mi,t));
+      const ei=mkEdit('cj_i_'+mi,String(cj.ingreso[mi]||0),(t)=>this.setCaja('ingreso',mi,t));
       cajaRows.push({abbr:this.monthAbbr[mi],
-        ppto:mkEdit('cj_p_'+mi,String(cj.ppto[mi]||0),(t)=>this.setCaja('ppto',mi,t)),
-        final:mkEdit('cj_f_'+mi,String(cj.final[mi]||0),(t)=>this.setCaja('final',mi,t)),
-        pct:mkEdit('cj_pc_'+mi,String(cj.pct[mi]||0),(t)=>this.setCaja('pct',mi,t)),
-        ing:mkEdit('cj_i_'+mi,String(cj.ingreso[mi]||0),(t)=>this.setCaja('ingreso',mi,t)),
+        pptoV:ep.value,pptoF:ep.onFocus,pptoI:ep.onInput,pptoB:ep.onBlur,
+        finalV:ef.value,finalF:ef.onFocus,finalI:ef.onInput,finalB:ef.onBlur,
+        pctV:ec.value,pctF:ec.onFocus,pctI:ec.onInput,pctB:ec.onBlur,
+        ingV:ei.value,ingF:ei.onFocus,ingI:ei.onInput,ingB:ei.onBlur,
       });
     }
     const sumA=(a)=>a.reduce((x,y)=>x+(y||0),0);
@@ -1238,7 +1250,7 @@ class Component extends DCLogic {
       topTitle: ({inicio:'Resumen',diario:'Gastos diarios',presupuesto:'Presupuesto',banco:'Caja y banco',anual:'Resumen anual'})[S.tab],
       currency:S.currency, currencySymbol:S.currency==='AUD'?'A$':'$',
       toggleCurrency:()=>this.toggleCurrency(),
-      openSettings:()=>this.setState({showSettings:true}), closeSettings:()=>this.setState({showSettings:false}),
+      openSettings:()=>this.setState({showSettings:true}), closeSettings:()=>this.setState({showSettings:false}), resetAll:()=>this.resetAll(),
       openAdd:()=>this.setState({showAdd:true}), closeAdd:()=>this.setState({showAdd:false}),
       showSettings:S.showSettings, showAdd:S.showAdd,
       showFab:S.tab==='inicio'||S.tab==='diario',
