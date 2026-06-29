@@ -628,6 +628,9 @@
     </button>
   </sc-if>
 
+  <!-- version stamp -->
+  <div style="position:absolute;left:0;right:0;bottom:84px;text-align:center;font-size:9px;color:var(--muted);padding:2px 0;letter-spacing:.3px;z-index:14;pointer-events:none">v1.4 · Jun 2026</div>
+
   <!-- bottom nav -->
   <div style="position:absolute;left:0;right:0;bottom:0;height:84px;background:var(--card);border-top:1px solid var(--cb);display:flex;align-items:flex-start;padding:10px 8px 0;z-index:15">
     <button onClick="{{ goInicio }}" style="flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;color:{{ colInicio }}">
@@ -870,7 +873,7 @@ class Component extends DCLogic {
     const caja={ppto:z12(),final:z12(),pct:z12(),ingreso:z12()};
     this.fileRef=React.createRef();
     const fixedPayments={}; this.fixed.forEach(f=>{fixedPayments[f.id]={done:false,date:'',pm:''};});
-    this._lsKey='gastos_app_v3';
+    this._lsKey='gastos_app_v4';
 
     const budgets={}; [...this.fixed,...this.variable].forEach(c=>{budgets[c.id]=c.budget;});
     const methods=this.pm.map(m=>{
@@ -891,8 +894,22 @@ class Component extends DCLogic {
       itemMatrix, monthComments, caja, importedTotals:{}, showImportPicker:false, showDeletePanel:false, deleteMonth:0, showMonth:null, importing:false, importMsg:'',
       expenses: ex,
     };
-    // load persisted state
-    try{const s=JSON.parse(localStorage.getItem(this._lsKey)||'null');if(s){this.state={...this.state,...s};}}catch(e){}
+    // load persisted state — sanitise to prevent null arrays crashing renderVals
+    try{
+      const s=JSON.parse(localStorage.getItem(this._lsKey)||'null');
+      if(s){
+        if(!Array.isArray(s.expenses)) s.expenses=[];
+        if(!Array.isArray(s.methods)) delete s.methods;
+        if(!s.fixedPayments||typeof s.fixedPayments!=='object') delete s.fixedPayments;
+        if(!s.budgets||typeof s.budgets!=='object') delete s.budgets;
+        if(!s.caja||typeof s.caja!=='object'){delete s.caja;}else{const z12=()=>[0,0,0,0,0,0,0,0,0,0,0,0];['ppto','final','pct','ingreso'].forEach(k=>{if(!Array.isArray(s.caja[k]))s.caja[k]=z12();});}
+        if(!s.itemMatrix||typeof s.itemMatrix!=='object') delete s.itemMatrix;
+        if(!s.monthComments||typeof s.monthComments!=='object') delete s.monthComments;
+        if(!s.importedTotals||typeof s.importedTotals!=='object') delete s.importedTotals;
+        if(!s.draft||typeof s.draft!=='object') delete s.draft;
+        this.state={...this.state,...s};
+      }
+    }catch(e){}
   }
 
   componentDidMount(){ this.applyTheme(); }
@@ -977,7 +994,7 @@ class Component extends DCLogic {
     try{localStorage.setItem(this._lsKey,JSON.stringify({expenses,budgets,methods,fixedPayments,itemMatrix,caja,monthComments,importedTotals,currency,period,tab,fixedTab,prorate}));}catch(e){}
   }
   resetMonth(mi){
-    const name=this.monthNames[mi];
+    const name=this.monthFull[mi];
     if(!window.confirm(`¿Borrar todos los gastos y datos de ${name}? Esta acción no se puede deshacer.`)) return;
     const z12=()=>[0,0,0,0,0,0,0,0,0,0,0,0];
     // remove expenses for that month
@@ -1191,7 +1208,8 @@ class Component extends DCLogic {
       onBlur:()=>this.setState({editing:{id:null,text:''}})};};
     const mNum=(aud)=>String(Math.round(aud*(S.currency==='AUD'?1:this.rate)));
     let totDeb=0,totReal=0,maxDiff={abs:0};
-    const methodRows=S.methods.map(m=>{
+    const methods=Array.isArray(S.methods)?S.methods:[];
+    const methodRows=methods.map(m=>{
       const expGasto=this.monthExpenses(this.curMonth).filter(e=>e.pm===m.id).reduce((s,e)=>s+e.amount,0);
       const fixGasto=this.fixed.reduce((s,f)=>{const p=S.fixedPayments[f.id];return s+(p&&p.done&&p.pm===m.id?this.budgetOf(f.id):0);},0);
       const gasto=expGasto+fixGasto;
@@ -1211,7 +1229,7 @@ class Component extends DCLogic {
     });
     const totDiff=totReal-totDeb;
     const reconMsg=maxDiff.abs<1?'Todo cuadra con el banco':(maxDiff.m.name+': '+(maxDiff.diff<0?'faltan ':'sobran ')+this.fmt0(maxDiff.abs)+(maxDiff.diff<0?' — gasto sin registrar':' — ingreso o ajuste'));
-    const pmChips=S.methods.map(m=>{const on=S.draft.pm===m.id;return{name:m.name,pick:()=>this.setDraft('pm',m.id),border:on?m.color:'var(--cb)',bg:on?m.color:'var(--card)',fg:on?'#fff':'var(--ink)'};});
+    const pmChips=methods.map(m=>{const on=S.draft.pm===m.id;return{name:m.name,pick:()=>this.setDraft('pm',m.id),border:on?m.color:'var(--cb)',bg:on?m.color:'var(--card)',fg:on?'#fff':'var(--ink)'};});
 
     // ---- daily bars + category rows (Inicio rediseño) ----
     const perDay=Array(dim+1).fill(0);
@@ -1272,7 +1290,7 @@ class Component extends DCLogic {
         checkBg:p.done?'var(--accent)':'transparent',checkBd:p.done?'var(--accent)':'var(--cb)',
         date:p.date,onDate:(e)=>this.setFixedPayment(f.id,'date',e.target.value),
         toggle:()=>this.toggleFixedDone(f.id),
-        pmChips:S.methods.map(m=>({name:m.name.slice(0,9),bd:p.pm===m.id?m.color:'var(--cb)',bg:p.pm===m.id?m.color:'var(--card)',fg:p.pm===m.id?'#fff':'var(--ink)',pick:()=>this.setFixedPayment(f.id,'pm',m.id)}))};
+        pmChips:methods.map(m=>({name:m.name.slice(0,9),bd:p.pm===m.id?m.color:'var(--cb)',bg:p.pm===m.id?m.color:'var(--card)',fg:p.pm===m.id?'#fff':'var(--ink)',pick:()=>this.setFixedPayment(f.id,'pm',m.id)}))};
     });
     const fixedPaidCount=this.fixed.filter(f=>fp[f.id]&&fp[f.id].done).length;
     const fixedPaidTotal=this.fmt0(this.fixed.reduce((s,f)=>{const p=fp[f.id];return s+(p&&p.done?this.budgetOf(f.id):0);},0));
@@ -1300,7 +1318,7 @@ class Component extends DCLogic {
       toggleCurrency:()=>this.toggleCurrency(),
       openSettings:()=>this.setState({showSettings:true}), closeSettings:()=>this.setState({showSettings:false}), resetAll:()=>this.resetAll(),
       showDeletePanel:S.showDeletePanel, openDeletePanel:()=>this.setState({showDeletePanel:true}), closeDeletePanel:()=>this.setState({showDeletePanel:false}),
-      deleteMonthOpts:this.monthNames.map((n,i)=>({label:n,sel:S.deleteMonth===i,pick:()=>this.setState({deleteMonth:i}),selBd:S.deleteMonth===i?'var(--accent)':'var(--cb)',selBg:S.deleteMonth===i?'var(--accent)':'var(--card)',selFg:S.deleteMonth===i?'#fff':'var(--ink)'})),
+      deleteMonthOpts:(this.monthFull||[]).map((n,i)=>({label:n,sel:S.deleteMonth===i,pick:()=>this.setState({deleteMonth:i}),selBd:S.deleteMonth===i?'var(--accent)':'var(--cb)',selBg:S.deleteMonth===i?'var(--accent)':'var(--card)',selFg:S.deleteMonth===i?'#fff':'var(--ink)'})),
       doDeleteMonth:()=>this.resetMonth(S.deleteMonth),
       doDeleteAll:()=>this.resetAll(),
       openAdd:()=>this.setState({showAdd:true}), closeAdd:()=>this.setState({showAdd:false}),
@@ -1378,6 +1396,7 @@ class Component extends DCLogic {
       addGroups, draftRecurring,
       saveExpense:()=>this.saveExpense(), saveBg:canSave?'var(--accent)':'var(--cb)',
     };
+
   }
 }
 </script>
