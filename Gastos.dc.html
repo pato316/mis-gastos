@@ -43,6 +43,7 @@
       <button onClick="{{ openSettings }}" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--cb);background:var(--card);border-radius:999px;color:var(--ink);cursor:pointer">
         <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="6" x2="17" y2="6"/><circle cx="13" cy="6" r="2.4" fill="var(--card)"/><line x1="3" y1="14" x2="17" y2="14"/><circle cx="7" cy="14" r="2.4" fill="var(--card)"/></svg>
       </button>
+
     </div>
   </div>
 
@@ -443,6 +444,35 @@
         </div>
       </div>
 
+      <button onClick="{{ openDeletePanel }}" style="width:100%;margin-top:12px;padding:13px 0;border-radius:13px;border:1.5px solid #b8472e;background:rgba(184,71,46,.06);color:#b8472e;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3,6 17,6"/><path d="M8 6V4h4v2"/><rect x="5" y="6" width="10" height="11" rx="2"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="12" y1="10" x2="12" y2="14"/></svg>
+        Borrar datos por mes
+      </button>
+
+      <!-- delete panel -->
+      <sc-if value="{{ showDeletePanel }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeDeletePanel }}" style="position:fixed;inset:0;background:rgba(22,32,46,.45);z-index:100;display:flex;align-items:flex-end"></div>
+        <div style="position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:var(--card);border-radius:24px 24px 0 0;padding:20px 20px 36px;z-index:101">
+          <div style="width:36px;height:4px;background:var(--cb);border-radius:4px;margin:0 auto 20px"></div>
+          <div style="font-size:17px;font-weight:600;margin-bottom:4px">Borrar datos</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:18px">Elige borrar un mes específico o todos los datos.</div>
+
+          <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px">SELECCIONAR MES</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px">
+            <sc-for list="{{ deleteMonthOpts }}" as="mo" hint-placeholder-count="12">
+              <button onClick="{{ mo.pick }}" style="padding:6px 12px;border-radius:99px;border:1.5px solid {{ mo.selBd }};background:{{ mo.selBg }};color:{{ mo.selFg }};font-size:12px;font-weight:600;cursor:pointer">{{ mo.label }}</button>
+            </sc-for>
+          </div>
+
+          <button onClick="{{ doDeleteMonth }}" style="width:100%;padding:13px 0;border-radius:13px;border:1.5px solid #b8472e;background:rgba(184,71,46,.07);color:#b8472e;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px">
+            Borrar mes seleccionado
+          </button>
+          <button onClick="{{ doDeleteAll }}" style="width:100%;padding:13px 0;border-radius:13px;border:none;background:#b8472e;color:#fff;font-size:14px;font-weight:600;cursor:pointer">
+            Borrar todos los meses
+          </button>
+        </div>
+      </sc-if>
+
       <button onClick="{{ openImportPicker }}" style="width:100%;margin-top:12px;padding:13px 0;border-radius:13px;border:none;background:var(--accent);color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>
         Importar Excel de un mes
@@ -840,7 +870,7 @@ class Component extends DCLogic {
     const caja={ppto:z12(),final:z12(),pct:z12(),ingreso:z12()};
     this.fileRef=React.createRef();
     const fixedPayments={}; this.fixed.forEach(f=>{fixedPayments[f.id]={done:false,date:'',pm:''};});
-    this._lsKey='gastos_app_v2';
+    this._lsKey='gastos_app_v3';
 
     const budgets={}; [...this.fixed,...this.variable].forEach(c=>{budgets[c.id]=c.budget;});
     const methods=this.pm.map(m=>{
@@ -858,7 +888,7 @@ class Component extends DCLogic {
       draft:{amount:'',cat:'super',label:'',date:this.today,pm:'amex'},
       methods,
       fixedTab:'registro', fixedPayments,
-      itemMatrix, monthComments, caja, importedTotals:{}, showImportPicker:false, showMonth:null, importing:false, importMsg:'',
+      itemMatrix, monthComments, caja, importedTotals:{}, showImportPicker:false, showDeletePanel:false, deleteMonth:0, showMonth:null, importing:false, importMsg:'',
       expenses: ex,
     };
     // load persisted state
@@ -945,6 +975,24 @@ class Component extends DCLogic {
   componentDidUpdate(){
     const {expenses,budgets,methods,fixedPayments,itemMatrix,caja,monthComments,importedTotals,currency,period,tab,fixedTab,prorate}=this.state;
     try{localStorage.setItem(this._lsKey,JSON.stringify({expenses,budgets,methods,fixedPayments,itemMatrix,caja,monthComments,importedTotals,currency,period,tab,fixedTab,prorate}));}catch(e){}
+  }
+  resetMonth(mi){
+    const name=this.monthNames[mi];
+    if(!window.confirm(`¿Borrar todos los gastos y datos de ${name}? Esta acción no se puede deshacer.`)) return;
+    const z12=()=>[0,0,0,0,0,0,0,0,0,0,0,0];
+    // remove expenses for that month
+    const expenses=this.state.expenses.filter(e=>{const d=new Date(e.date); return d.getMonth()!==mi;});
+    // clear itemMatrix for that month
+    const itemMatrix={};
+    Object.keys(this.state.itemMatrix).forEach(k=>{const a=this.state.itemMatrix[k].slice(); a[mi]=0; itemMatrix[k]=a;});
+    // clear caja for that month
+    const caja={};
+    Object.keys(this.state.caja).forEach(k=>{const a=this.state.caja[k].slice(); a[mi]=0; caja[k]=a;});
+    // clear comment for that month
+    const monthComments={...this.state.monthComments}; delete monthComments[mi];
+    // clear importedTotals for that month
+    const importedTotals={...this.state.importedTotals}; delete importedTotals[mi];
+    this.setState({expenses,itemMatrix,caja,monthComments,importedTotals,showDeletePanel:false});
   }
   resetAll(){
     if(!window.confirm('¿Borrar TODOS los datos y volver a cero? Esta acción no se puede deshacer.')) return;
@@ -1251,6 +1299,10 @@ class Component extends DCLogic {
       currency:S.currency, currencySymbol:S.currency==='AUD'?'A$':'$',
       toggleCurrency:()=>this.toggleCurrency(),
       openSettings:()=>this.setState({showSettings:true}), closeSettings:()=>this.setState({showSettings:false}), resetAll:()=>this.resetAll(),
+      showDeletePanel:S.showDeletePanel, openDeletePanel:()=>this.setState({showDeletePanel:true}), closeDeletePanel:()=>this.setState({showDeletePanel:false}),
+      deleteMonthOpts:this.monthNames.map((n,i)=>({label:n,sel:S.deleteMonth===i,pick:()=>this.setState({deleteMonth:i}),selBd:S.deleteMonth===i?'var(--accent)':'var(--cb)',selBg:S.deleteMonth===i?'var(--accent)':'var(--card)',selFg:S.deleteMonth===i?'#fff':'var(--ink)'})),
+      doDeleteMonth:()=>this.resetMonth(S.deleteMonth),
+      doDeleteAll:()=>this.resetAll(),
       openAdd:()=>this.setState({showAdd:true}), closeAdd:()=>this.setState({showAdd:false}),
       showSettings:S.showSettings, showAdd:S.showAdd,
       showFab:S.tab==='inicio'||S.tab==='diario',
